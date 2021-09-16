@@ -71,6 +71,7 @@ describe('UserServices', () => {
             const result = await service.create(createUserDTO)
             console.log(result)
             id = result.id
+            console.log(id)
             expect(result.name).toEqual("jest_testing");
         });
 
