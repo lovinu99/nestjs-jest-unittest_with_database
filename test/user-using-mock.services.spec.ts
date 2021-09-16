@@ -7,6 +7,24 @@ import { User } from '../src/user/entities/user.entity';
 import { UserService } from '../src/user/services/user.service';
 
 
+// run test: npm test
+
+/**
+ * Sử dụng mock khi muốn tạo một bộ test giả cho chức năng, tránh phụ thuộc vào các chức năng khác
+ * Ví dụ: UserServices được DI tiêm vào từ UserRepository
+ * method findAll() của UserServices, sử dụng method find() của UserRepository
+ * khi đó, ta sử dụng mock để tạo một fake UserRepository, tạo một hàm find() fake trả về kết quả ta muốn
+ * ( Như trong trường hợp bên dưới, fake hàm find() trả về giá trị ta muốn là mảng User[] ta đã tạo)
+ * Như vậy, method findAll() của services sẽ lấy giá trị từ hàm find() fake này để xử lý
+ * cuối cùng trả về kết quả
+ * ta sẽ so sánh kết quả đó với kết quả mong muốn bằng expect
+ * 
+ * Cách này hữu dụng khi ta không biết cách hoạt động của các hàm bên trong, ta chỉ quan tâm đến việc xử lý
+ * của hàm ta đang test. Hoặc trong các trường hợp không muốn phụ thuộc vào các yếu tố khác như API, Database
+ */
+
+
+// fake UserRepository
 class fakeUserRepository {
     db: User[] = [
         new User(),
@@ -57,11 +75,15 @@ describe('UserServices', () => {
     jest.setTimeout(600000)
 
 
+    // trước mỗi test case
     beforeEach(async () => {
+        // tạo module test
         module = await Test.createTestingModule({
             imports: [
+                // do có sử dụng bycrt và .env nên cần import module này để setup
                 ConfigModule.forRoot(),
             ],
+            // import các thành phần cần thiết
             providers: [
                 UserService,
                 {
@@ -70,13 +92,17 @@ describe('UserServices', () => {
                 },
             ],
         }).compile();
+
+        // tạo các biến cần dùng.
         service = module.get<UserService>(UserService);
         repository = module.get(getRepositoryToken(User));
     })
 
 
+    // bọc các test case
     describe('UserServices', () => {
 
+        // 1 test case
         it('get all user', async () => {
             const result = await service.findAll()
             console.log(result)
